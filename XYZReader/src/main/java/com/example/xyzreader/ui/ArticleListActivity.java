@@ -1,5 +1,6 @@
 package com.example.xyzreader.ui;
 
+import android.app.ActivityOptions;
 import android.app.LoaderManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -146,8 +147,25 @@ public class ArticleListActivity extends ActionBarActivity implements
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+
+                    //----------------- Original, Starter Code Version ---------------------
+                    /*startActivity(new Intent(Intent.ACTION_VIEW,
+                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition())))
+                    );*/
+                    //------------------------------------------------
+                    //--------------------------------------------------
+                    // tky add, Enable activity 'content transition' ....
+                    ActivityOptions option = ActivityOptions.makeSceneTransitionAnimation(ArticleListActivity.this);
+                  //ActivityOptions option = ActivityOptions.makeSceneTransitionAnimation(ArticleListActivity.this, vh.thmbnl_niview, "robot");
+
+                    Bundle bundle = option.toBundle();
+
                     startActivity(new Intent(Intent.ACTION_VIEW,
-                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition()))));
+                                    ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition())))
+
+                            , bundle
+                    );
+                    //----------------------------------------
                 }
             });
             return vh;
