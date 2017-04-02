@@ -8,4 +8,6 @@
     <dimen name="fab_press_translation_z">6dp</dimen>
     <dimen name="fab_margin">24dp</dimen>
 
+    <!-- note: tky add -->
+    <dimen name="toolbar_title_left_padding">72dp</dimen>
 </resources>

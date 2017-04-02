@@ -41,7 +41,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/logo"
+                android:layout_marginLeft="@dimen/toolbar_title_left_padding"
                 android:contentDescription="@string/app_name" />
+
+            <!-- note: tky add -->
+            <!--android:layout_marginLeft="@dimen/toolbar_title_left_padding"-->
 
         </android.support.v7.widget.Toolbar>
     </FrameLayout>
