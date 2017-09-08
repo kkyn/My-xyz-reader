@@ -5,7 +5,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.0'
+        classpath 'com.android.tools.build:gradle:2.3.3'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -17,9 +17,10 @@ allprojects {
         jcenter()
     }
 
+    // Used as a macro 'alias' definition, here it is referenced in Module's build.gradle
+    // e.g. compile "com.android.support:support-v4:$androidSupportVersion"
     ext {
         androidSupportVersion = "25.3.1"    // -- "25.3.0" --
-
     }
 }
 
