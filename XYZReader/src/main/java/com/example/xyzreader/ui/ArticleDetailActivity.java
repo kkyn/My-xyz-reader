@@ -48,6 +48,9 @@ public class ArticleDetailActivity extends ActionBarActivity
         }
         setContentView(R.layout.activity_article_detail);
 
+        // tky add, 9Sept.2017 --------------
+        postponeEnterTransition();
+
         getLoaderManager().initLoader(0, null, this);
 
         mPagerAdapter = new MyPagerAdapter(getFragmentManager());
@@ -108,6 +111,9 @@ public class ArticleDetailActivity extends ActionBarActivity
         }
     }
 
+    //---------------------------------------------------//
+    //---------- Begin: Loader Stuff --------------------//
+    //---------------------------------------------------//
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         return ArticleLoader.newAllArticlesInstance(this);
@@ -139,6 +145,9 @@ public class ArticleDetailActivity extends ActionBarActivity
         mCursor = null;
         mPagerAdapter.notifyDataSetChanged();
     }
+    //---------------------------------------------------//
+    //---------- End: Loader Stuff ----------------------//
+    //---------------------------------------------------//
 
     public void onUpButtonFloorChanged(long itemId, ArticleDetailFragment fragment) {
         if (itemId == mSelectedItemId) {
@@ -152,6 +161,9 @@ public class ArticleDetailActivity extends ActionBarActivity
         mUpButton.setTranslationY(Math.min(mSelectedItemUpButtonFloor - upButtonNormalBottom, 0));
     }
 
+    //------------------------------------------------------------//
+    //---------- Begin: FragmentStatePagerAdapter Stuff ----------//
+    //------------------------------------------------------------//
     private class MyPagerAdapter extends FragmentStatePagerAdapter {
         public MyPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -178,4 +190,7 @@ public class ArticleDetailActivity extends ActionBarActivity
             return (mCursor != null) ? mCursor.getCount() : 0;
         }
     }
+    //------------------------------------------------------------//
+    //---------- End: FragmentStatePagerAdapter Stuff ------------//
+    //------------------------------------------------------------//
 }

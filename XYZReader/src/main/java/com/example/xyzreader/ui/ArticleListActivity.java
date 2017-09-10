@@ -8,21 +8,27 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.format.DateUtils;
 import android.util.Log;
-import android.util.TypedValue;
-import android.view.MenuItem;
+import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.ImageLoader;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
@@ -32,6 +38,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
+import butterknife.BindString;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 /**
  * An activity representing a list of Articles. This activity has different presentations for
@@ -43,10 +53,16 @@ public class ArticleListActivity extends ActionBarActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = ArticleListActivity.class.toString();
-    private Toolbar mToolbar;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
-    private RecyclerView mRecyclerView;
 
+    // Use Butterknife
+    @BindView(R.id.toolbar) Toolbar mToolbar;
+    @BindView(R.id.swipe_refresh_layout) SwipeRefreshLayout mSwipeRefreshLayout;
+    @BindView(R.id.recycler_view) RecyclerView mRecyclerView;
+
+    @BindString(R.string.transition_photo) String transitionPhoto;
+
+
+    // https://developer.android.com/reference/java/text/SimpleDateFormat.html
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
     // Use default locale format
     private SimpleDateFormat outputFormat = new SimpleDateFormat();
@@ -58,14 +74,10 @@ public class ArticleListActivity extends ActionBarActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article_list);
 
-        mToolbar = (Toolbar) findViewById(R.id.toolbar);
-
+        ButterKnife.bind(this);
 
         final View toolbarContainerView = findViewById(R.id.toolbar_container);
 
-        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
-
-        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         getLoaderManager().initLoader(0, null, this);
 
         if (savedInstanceState == null) {
@@ -106,6 +118,9 @@ public class ArticleListActivity extends ActionBarActivity implements
         mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
     }
 
+    //---------------------------------------------------//
+    //---------- Begin: Loader Stuff --------------------//
+    //---------------------------------------------------//
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         return ArticleLoader.newAllArticlesInstance(this);
@@ -127,6 +142,12 @@ public class ArticleListActivity extends ActionBarActivity implements
         mRecyclerView.setAdapter(null);
     }
 
+    //---------------------------------------------------//
+    //---------- End: Loader Stuff ----------------------//
+    //---------------------------------------------------//
+    //---------------------------------------------------------//
+    //---------- Begin: RecyclerView Stuff --------------------//
+    //---------------------------------------------------------//
     private class Adapter extends RecyclerView.Adapter<ViewHolder> {
         private Cursor mCursor;
 
@@ -142,35 +163,16 @@ public class ArticleListActivity extends ActionBarActivity implements
 
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+
             View view = getLayoutInflater().inflate(R.layout.list_item_article, parent, false);
+
             final ViewHolder vh = new ViewHolder(view);
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
 
-                    //----------------- Original, Starter Code Version ---------------------
-                    /*startActivity(new Intent(Intent.ACTION_VIEW,
-                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition())))
-                    );*/
-                    //------------------------------------------------
-                    //--------------------------------------------------
-                    // tky add, Enable activity 'content transition' ....
-                    ActivityOptions option = ActivityOptions.makeSceneTransitionAnimation(ArticleListActivity.this);
-                  //ActivityOptions option = ActivityOptions.makeSceneTransitionAnimation(ArticleListActivity.this, vh.thmbnl_niview, "robot");
-
-                    Bundle bundle = option.toBundle();
-
-                    startActivity(new Intent(Intent.ACTION_VIEW,
-                                    ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition())))
-
-                            , bundle
-                    );
-                    //----------------------------------------
-                }
-            });
             return vh;
         }
 
+        // https://developer.android.com/reference/java/text/DateFormat.html#parse(java.lang.String)
+        // https://developer.android.com/reference/java/text/DateFormat.html
         private Date parsePublishedDate() {
             try {
                 String date = mCursor.getString(ArticleLoader.Query.PUBLISHED_DATE);
@@ -183,47 +185,200 @@ public class ArticleListActivity extends ActionBarActivity implements
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
+        public void onBindViewHolder( final ViewHolder holder, int position) {
             mCursor.moveToPosition(position);
+
+            // tky add, Begin, 9Sept.2017 --------------
+            // tky add ----------------------------------------------
+            // Set the 'source'-View for 'shared-element-transition' animation
+            //-------------------------------------------------------
+            long photoId = getItemId(holder.getAdapterPosition());
+            String srcRefViewForSharedElementTransition = transitionPhoto + photoId;
+
+            String stringUrl = mCursor.getString(ArticleLoader.Query.THUMB_URL);
+            Float floatAspectRatio = mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO);
+
+            //***********************
+            ImageLoader imageLoader =
+                ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader();
+
+            //***********************
+            // Get Image-info from ImageLoader-object,
+            // with the given image's-Url-id and interface 'pointer'/ (cllback).
+            ImageLoader.ImageContainer myImageContainer =
+                imageLoader.get(stringUrl, new ImageLoader.ImageListener() {
+
+                    @Override
+                    public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
+
+                        Bitmap bitmap = imageContainer.getBitmap();
+
+                        if (bitmap != null) {
+                            colorTheTitleBar(bitmap, holder);
+                        }
+                    }
+
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                    }
+                });
+
+
+            //***********************
+            //----------------------------------------------
+            // -- thumb-nail-View --
+            // .setImageUrl -- define in ImageView
+            holder.thumbnailDynamicHeightNetworkImageView.setImageUrl(stringUrl,imageLoader);
+            holder.thumbnailDynamicHeightNetworkImageView.setAspectRatio(floatAspectRatio);
+            holder.thumbnailDynamicHeightNetworkImageView.setTransitionName(srcRefViewForSharedElementTransition);
+            //----------------------------------------------
+            final Pair<View, String> pair1 =
+                        new Pair<>((View)holder.thumbnailDynamicHeightNetworkImageView,
+                                         holder.thumbnailDynamicHeightNetworkImageView.getTransitionName());
+            //final Pair<View, String> pair2 = new Pair<>((View)holder.barLayout, holder.barLayout.getTransitionName());
+
+            // note !! : tky add, 'itemView' is defined in RecyclerView class
+            // define 'setOnClickListener' here works!!
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    //----------------- Original, Starter Code Version ---------------------
+                    /*startActivity(new Intent(Intent.ACTION_VIEW,
+                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition())))
+                    );*/
+                    //------------------------------------------------
+                    //------------------------------------------------
+                    // note: tky add, Enable 'activity content transition' ....
+                    /*ActivityOptions option = ActivityOptions.makeSceneTransitionAnimation(ArticleListActivity.this);
+                    Bundle bundle = option.toBundle();
+                    startActivity(new Intent(Intent.ACTION_VIEW,
+                                    ItemsContract.Items.buildItemUri(getItemId(holder.getAdapterPosition())))
+
+                                    , bundle
+                    );*/
+                    // note: tky add, Implementing 'Shared Element Transition' ....
+                    ActivityOptions option =
+                        ActivityOptions.makeSceneTransitionAnimation
+                            (
+                                ArticleListActivity.this
+                                ,pair1
+                              //,pair2
+
+                              /*holder.thmbnl_niview,
+                                holder.thmbnl_niview.getTransitionName()*/
+                            );
+
+                    Bundle bundle = option.toBundle();
+
+                    Uri myUri = ItemsContract.Items.buildItemUri(getItemId(holder.getAdapterPosition()));
+
+                    startActivity(new Intent(Intent.ACTION_VIEW, myUri), bundle);
+                    //------------------------------------------------
+                }
+            });
+            // tky add, End, 9Sept.2017 --------------
+
             holder.titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
+
             Date publishedDate = parsePublishedDate();
+
+            // https://developer.android.com/reference/java/util/Date.html#before(java.util.Date)
+            // https://developer.android.com/reference/java/util/Calendar.html#getTime()
+            // https://developer.android.com/reference/java/util/GregorianCalendar.html
+            // Calendar -> GregorianCalendar, getTime() is declared in Calendar.
             if (!publishedDate.before(START_OF_EPOCH.getTime())) {
 
-                holder.subtitleView.setText(Html.fromHtml(
-                        DateUtils.getRelativeTimeSpanString(
-                                publishedDate.getTime(),
-                                System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
-                                DateUtils.FORMAT_ABBREV_ALL).toString()
+                // https://developer.android.com/reference/android/text/Html.html#fromHtml(java.lang.String)
+                // https://developer.android.com/reference/android/text/format/DateUtils.html
+                // https://developer.android.com/reference/android/text/format/DateUtils.html#getRelativeTimeSpanString(long, long, long, int)
+                holder.subtitleView.setText(
+                            Html.fromHtml(
+                                DateUtils.getRelativeTimeSpanString(
+                                    publishedDate.getTime(),
+                                    System.currentTimeMillis(),
+                                    DateUtils.HOUR_IN_MILLIS,
+                                    DateUtils.FORMAT_ABBREV_ALL
+                                ).toString()
                                 + "<br/>" + " by "
-                                + mCursor.getString(ArticleLoader.Query.AUTHOR)));
+                                + mCursor.getString(ArticleLoader.Query.AUTHOR)
+                            )
+                        );
             } else {
-                holder.subtitleView.setText(Html.fromHtml(
-                        outputFormat.format(publishedDate)
-                        + "<br/>" + " by "
-                        + mCursor.getString(ArticleLoader.Query.AUTHOR)));
+                holder.subtitleView.setText(
+                            Html.fromHtml(
+                                outputFormat.format(publishedDate)
+                                + "<br/>" + " by "
+                                + mCursor.getString(ArticleLoader.Query.AUTHOR)
+                            )
+                        );
             }
-            holder.thumbnailView.setImageUrl(
-                    mCursor.getString(ArticleLoader.Query.THUMB_URL),
-                    ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader());
-            holder.thumbnailView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
+
+            holder.thumbnailDynamicHeightNetworkImageView
+                    .setImageUrl(
+                        mCursor.getString(ArticleLoader.Query.THUMB_URL),
+                        ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader()
+                    );
+
+            holder.thumbnailDynamicHeightNetworkImageView
+                    .setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
         }
 
         @Override
         public int getItemCount() {
             return mCursor.getCount();
         }
+
+        ////////////////////////////////////////////////////////////
+        // ref: https://developer.android.com/reference/android/support/v7/graphics/Palette.html
+        private void colorTheTitleBar(Bitmap bitmap, final ViewHolder holder) {
+
+            // Start generating a Palette with the returned Palette.Builder instance.
+            Palette.Builder mPaletteBuilder = Palette.from(bitmap);
+
+            // Clear all added filters. ???
+            mPaletteBuilder.clearFilters();
+
+            // Set the maximum number of colors to use in the quantization step
+            // when using a Bitmap as the source.
+            mPaletteBuilder = mPaletteBuilder.maximumColorCount(14);
+
+            // Generate the Palette asynchronously.
+            AsyncTask<Bitmap, Void, Palette> mPalette = mPaletteBuilder.generate(
+
+                new Palette.PaletteAsyncListener() {
+
+                    @Override
+                    public void onGenerated(Palette palette) {
+
+                        // Get the "darkVibrant" color swatch based in the input bitmap.
+                        Palette.Swatch muted = palette.getMutedSwatch();
+
+                        if (muted != null) {
+                            holder.barLayout.setBackgroundColor(muted.getRgb());
+                            holder.titleView.setTextColor(muted.getTitleTextColor());
+                            holder.subtitleView.setTextColor(muted.getTitleTextColor());
+                        }
+                    }
+
+                }
+            );
+        }
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        public DynamicHeightNetworkImageView thumbnailView;
-        public TextView titleView;
-        public TextView subtitleView;
+    //-------------------------------------------------------//
+    //---------- End: RecyclerView Stuff --------------------//
+    //-------------------------------------------------------//
+    static class ViewHolder extends RecyclerView.ViewHolder {
 
-        public ViewHolder(View view) {
+        @BindView(R.id.thumbnail)  DynamicHeightNetworkImageView thumbnailDynamicHeightNetworkImageView;
+        @BindView(R.id.article_title) TextView titleView;
+        @BindView(R.id.article_subtitle) TextView subtitleView;
+        @BindView(R.id.bar_) LinearLayout barLayout;
+
+        ViewHolder(View view) {
             super(view);
-            thumbnailView = (DynamicHeightNetworkImageView) view.findViewById(R.id.thumbnail);
-            titleView = (TextView) view.findViewById(R.id.article_title);
-            subtitleView = (TextView) view.findViewById(R.id.article_subtitle);
+            ButterKnife.bind(this, view);
         }
     }
 }

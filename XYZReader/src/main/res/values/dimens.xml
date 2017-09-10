@@ -10,4 +10,7 @@
 
     <!-- note: tky add -->
     <dimen name="toolbar_title_left_padding">72dp</dimen>
+
+    <integer name="anim_fade_duration">250</integer>
+    <integer name="anim_slide_duration">250</integer>
 </resources>

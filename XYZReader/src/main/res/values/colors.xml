@@ -28,4 +28,8 @@
     <color name="lime_500">#CDDC39</color>
     <color name="lime_700">#AFB42B</color>
     <color name="cyan_a400">#00E5FF</color>
+
+    <!-- tky add .... -->
+    <color name="drkgray">#ff909090</color>
+    <color name="pink_a400">#F50057</color>
 </resources>

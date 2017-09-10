@@ -25,9 +25,12 @@ android {
     }
 }
 
-/*ext.supportLibVersion = '25.3.1'*/
+ext.supportLibVersion = '25.3.1'
 
 dependencies {
+    // tky add ----- for use for CoordinatorLayout -----
+    compile "com.android.support:design:${supportLibVersion}"
+    compile "com.android.support:percent:${supportLibVersion}"
 
     compile "com.android.support:support-v4:$androidSupportVersion"
     compile "com.android.support:support-v13:$androidSupportVersion"
@@ -38,4 +41,9 @@ dependencies {
 
     compile 'com.squareup.okhttp3:okhttp:3.1.2'
     compile files('libs/volley.jar')
+
+    // tky add ----- for use in Butterknife, miscellaneous -----
+    compile 'com.jakewharton:butterknife:8.8.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+
 }
