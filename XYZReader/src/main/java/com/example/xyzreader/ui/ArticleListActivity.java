@@ -13,7 +13,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -49,8 +49,11 @@ import butterknife.ButterKnife;
  * touched, lead to a {@link ArticleDetailActivity} representing item details. On tablets, the
  * activity presents a grid of items as cards.
  */
-public class ArticleListActivity extends ActionBarActivity implements
-        LoaderManager.LoaderCallbacks<Cursor> {
+public class ArticleListActivity extends AppCompatActivity /*ActionBarActivity*/
+                    implements
+                        LoaderManager.LoaderCallbacks<Cursor>
+                        ,SwipeRefreshLayout.OnRefreshListener
+{
 
     private static final String TAG = ArticleListActivity.class.toString();
 
@@ -60,7 +63,6 @@ public class ArticleListActivity extends ActionBarActivity implements
     @BindView(R.id.recycler_view) RecyclerView mRecyclerView;
 
     @BindString(R.string.transition_photo) String transitionPhoto;
-
 
     // https://developer.android.com/reference/java/text/SimpleDateFormat.html
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
@@ -76,7 +78,9 @@ public class ArticleListActivity extends ActionBarActivity implements
 
         ButterKnife.bind(this);
 
-        final View toolbarContainerView = findViewById(R.id.toolbar_container);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.cyan_a400);
+        mSwipeRefreshLayout.setSize(SwipeRefreshLayout.DEFAULT);
 
         getLoaderManager().initLoader(0, null, this);
 
@@ -85,26 +89,84 @@ public class ArticleListActivity extends ActionBarActivity implements
         }
     }
 
+    //----------------------------------------------------------------------
+    // Method for interface/callback SwipeRefreshLayout.OnRefreshListener.
+    // Called when a swipe gesture triggers a refresh.
+    //----------------------------------------------------------------------
+    @Override
+    public void onRefresh() {
+        refresh();
+    }
+
     private void refresh() {
+
+        //-------------------------------------------------
+        // Request that a given application service be started.
+        // https://developer.android.com/reference/android/content/Context.html#startService(android.content.Intent)
+        // https://developer.android.com/reference/android/app/IntentService.html
+        // 'Call' MyIntentService/IntentService to start a service (startService).
+        // MyIntentService/IntentService is a base class for Services that
+        // handle asynchronous requests (expressed as Intents) on demand.
+        // Clients send requests through startService(Intent) calls
+        //--- Enable/Start a backgound thread to perform a service, which is defined in MyIntentService
+        //-------------------------------------------------
+
         startService(new Intent(this, UpdaterService.class));
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        registerReceiver(mRefreshingReceiver,
-                new IntentFilter(UpdaterService.BROADCAST_ACTION_STATE_CHANGE));
+
+        //-------------------------------------------------
+        // https://developer.android.com/reference/android/content/Context.html
+        // Dynamically register an instance of this class (BroadcastReceiver).
+        // Register a BroadcastReceiver to be run in the main activity thread.
+        // The receiver will be called with any broadcast Intent that matches filter,
+        // in the main application thread.
+        //--- Enable 'hearing' to receive a specific-broadcast(defined by a filtered signature and value).
+        //-------------------------------------------------
+        registerReceiver(
+                mRefreshingReceiver,    //-- receiver
+                new IntentFilter(UpdaterService.BROADCAST_ACTION_STATE_CHANGE)  //-- filter
+        );
+        //-------------------------------------------------
+        //getApplication().registerReceiver(...);   // equivalent call statement
+        //this.registerReceiver(...);   // equivalent call statement
+        //-------------------------------------------------
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+
+        //-------------------------------------------------
+        // Unregister a previously registered BroadcastReceiver.
+        // All filters ,e.g. UpdaterService.BROADCAST_ACTION_STATE_CHANGE,
+        //  that have been registered for this BroadcastReceiver will be removed.
+        //--- Disable 'hearing' of receiving a specific-broadcast, signature and value.
+        //-------------------------------------------------
+
         unregisterReceiver(mRefreshingReceiver);
+        //-------------------------------------------------
+        //getApplication().unregisterReceiver(mBroadcastReceiver); // equivalent statement
+        //this.unregisterReceiver(mBroadcastReceiver);   // equivalent statement
+        //-------------------------------------------------
     }
 
+    //-----------------------------------------------------------
+    //------------- Begin: Swipe to Refresh ---------------------
+    //-----------------------------------------------------------
     private boolean mIsRefreshing = false;
 
+    // Instantiate a BroadcastReceiver.
+    // When this BroadcastReceiver 'receives/hear' an 'Intent-Broadcast',
+    // onReceive-method is called to check/filter the 'Intent-Broadcast'-ACTIONTYPE and
+    // its accompanying data/value.
+    // In this case, Broadcaster/Sender is from the UpdaterService/IntentService.
     private BroadcastReceiver mRefreshingReceiver = new BroadcastReceiver() {
+
+        // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
         @Override
         public void onReceive(Context context, Intent intent) {
             if (UpdaterService.BROADCAST_ACTION_STATE_CHANGE.equals(intent.getAction())) {
@@ -117,10 +179,13 @@ public class ArticleListActivity extends ActionBarActivity implements
     private void updateRefreshingUI() {
         mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
     }
+    //-----------------------------------------------------------
+    //--------------- End  : Swipe to Refresh -------------------
+    //-----------------------------------------------------------
 
-    //---------------------------------------------------//
-    //---------- Begin: Loader Stuff --------------------//
-    //---------------------------------------------------//
+    //---------------------------------------------------------------------//
+    //---------- Begin: LoaderManager.LoaderCallbacks<Cursor> Stuff -------//
+    //---------------------------------------------------------------------//
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         return ArticleLoader.newAllArticlesInstance(this);
@@ -141,13 +206,12 @@ public class ArticleListActivity extends ActionBarActivity implements
     public void onLoaderReset(Loader<Cursor> loader) {
         mRecyclerView.setAdapter(null);
     }
-
-    //---------------------------------------------------//
-    //---------- End: Loader Stuff ----------------------//
-    //---------------------------------------------------//
-    //---------------------------------------------------------//
-    //---------- Begin: RecyclerView Stuff --------------------//
-    //---------------------------------------------------------//
+    //---------------------------------------------------------------------//
+    //---------- End: LoaderManager.LoaderCallbacks<Cursor> Stuff ---------//
+    //---------------------------------------------------------------------//
+    //---------------------------------------------------------------------//
+    //---------- Begin: Adapter for RecyclerView Stuff --------------------//
+    //---------------------------------------------------------------------//
     private class Adapter extends RecyclerView.Adapter<ViewHolder> {
         private Cursor mCursor;
 
@@ -204,7 +268,7 @@ public class ArticleListActivity extends ActionBarActivity implements
 
             //***********************
             // Get Image-info from ImageLoader-object,
-            // with the given image's-Url-id and interface 'pointer'/ (cllback).
+            // with the given image's-Url-id and interface 'pointer'/ (callback).
             ImageLoader.ImageContainer myImageContainer =
                 imageLoader.get(stringUrl, new ImageLoader.ImageListener() {
 
@@ -359,9 +423,13 @@ public class ArticleListActivity extends ActionBarActivity implements
         }
     }
 
-    //-------------------------------------------------------//
-    //---------- End: RecyclerView Stuff --------------------//
-    //-------------------------------------------------------//
+    //-------------------------------------------------------------------//
+    //---------- End: Adapter for RecyclerView Stuff --------------------//
+    //-------------------------------------------------------------------//
+
+    //-------------------------------------------------//
+    //------ Begin : ViewHolder For RecyclerView ------//
+    //-------------------------------------------------//
     static class ViewHolder extends RecyclerView.ViewHolder {
 
         @BindView(R.id.thumbnail)  DynamicHeightNetworkImageView thumbnailDynamicHeightNetworkImageView;
@@ -374,4 +442,7 @@ public class ArticleListActivity extends ActionBarActivity implements
             ButterKnife.bind(this, view);
         }
     }
+    //-------------------------------------------------//
+    //------ End   : ViewHolder For RecyclerView ------//
+    //-------------------------------------------------//
 }
