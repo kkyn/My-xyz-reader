@@ -17,6 +17,7 @@ import java.util.GregorianCalendar;
 import android.os.Bundle;
 import android.support.v4.app.ShareCompat;
 import android.support.v4.view.ViewCompat;
+import android.support.v4.widget.NestedScrollView;
 import android.support.v7.graphics.Palette;
 import android.text.Html;
 import android.text.format.DateUtils;
@@ -54,8 +55,9 @@ public class ArticleDetailFragment extends Fragment implements
     @BindString(R.string.transition_photo) String transitionPhoto;
 
     @BindView(R.id.photo) ImageView mPhotoView;
-    @BindView(R.id.photo_container) View mPhotoContainerView;
     @BindView(R.id.share_fab) ImageButton shareFab;
+    @BindView(R.id.photo_container) View mPhotoContainerView;
+    @BindView(R.id.nested_scrollview) NestedScrollView mNestedScrollView;
 
     @BindView(R.id.article_title) TextView titleView;
     @BindView(R.id.article_byline) TextView bylineView;
@@ -65,8 +67,8 @@ public class ArticleDetailFragment extends Fragment implements
     private Cursor mCursor;
     private long mItemId;
     private int mMutedColor = 0xFF333333;
-    private ObservableScrollView mScrollView;
-    private DrawInsetsFrameLayout mDrawInsetsFrameLayout;
+//    private ObservableScrollView mScrollView;
+//    private DrawInsetsFrameLayout mDrawInsetsFrameLayout;
     private ColorDrawable mStatusBarColorDrawable;
 
     private int mTopInset;
@@ -162,6 +164,29 @@ public class ArticleDetailFragment extends Fragment implements
 
         ViewCompat.setTransitionName(mPhotoView, targetRefViewForSharedElementTransition);
         // tky add, End, 9Sept.2017 --------------
+        if (mNestedScrollView != null){
+            mNestedScrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
+                @Override
+                public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                    if (scrollY > oldScrollY) {
+                        //Log.d(TAG, "SCROLL DOWN");
+                        shareFab.setVisibility(View.INVISIBLE);
+                    }
+                    if (scrollY < oldScrollY) {
+                        //Log.d(TAG, "SCROLL UP");
+                        shareFab.setVisibility(View.INVISIBLE);
+                    }
+                    if (scrollY == 0) {
+                        //Log.d(TAG, "SCROLL TOP");
+                        shareFab.setVisibility(View.VISIBLE);
+                    }
+                    if (scrollY == (v.getChildAt(0).getMeasuredHeight() - v.getMeasuredHeight())) {
+                        //Log.d(TAG, "SCROLL BOTTOM");
+                        shareFab.setVisibility(View.VISIBLE);
+                    }
+                }
+            });
+        }
 
         mStatusBarColorDrawable = new ColorDrawable(0);
 
@@ -281,11 +306,11 @@ public class ArticleDetailFragment extends Fragment implements
                                 mPhotoView.setImageBitmap(imageContainer.getBitmap());
                                 mRootView.findViewById(R.id.meta_bar)
                                         .setBackgroundColor(mMutedColor);
+
                                  // updateStatusBar(); // tky remove 9Sept.2017
 
-                                // tky add, Begin, 9Sept.2017 --------------
+                                // tky add, 9Sept.2017 --------------
                                 scheduleStartPostponedTransition(mPhotoView);
-                                // tky add, End, 9Sept.2017 --------------
                             }
                         }
 
@@ -355,6 +380,7 @@ public class ArticleDetailFragment extends Fragment implements
     //---------- End: Loader Stuff ----------------------//
     //---------------------------------------------------//
 
+//-1
     public int getUpButtonFloor() {
         if (mPhotoContainerView == null || mPhotoView.getHeight() == 0) {
             return Integer.MAX_VALUE;
