@@ -231,6 +231,7 @@ public class ArticleListActivity extends ActionBarActivity implements
             holder.thumbnailDynamicHeightNetworkImageView.setImageUrl(stringUrl,imageLoader);
             holder.thumbnailDynamicHeightNetworkImageView.setAspectRatio(floatAspectRatio);
             holder.thumbnailDynamicHeightNetworkImageView.setTransitionName(srcRefViewForSharedElementTransition);
+
             //----------------------------------------------
             final Pair<View, String> pair1 =
                         new Pair<>((View)holder.thumbnailDynamicHeightNetworkImageView,
@@ -314,14 +315,6 @@ public class ArticleListActivity extends ActionBarActivity implements
                         );
             }
 
-            holder.thumbnailDynamicHeightNetworkImageView
-                    .setImageUrl(
-                        mCursor.getString(ArticleLoader.Query.THUMB_URL),
-                        ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader()
-                    );
-
-            holder.thumbnailDynamicHeightNetworkImageView
-                    .setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
         }
 
         @Override

@@ -19,6 +19,7 @@ import android.support.v4.app.ShareCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.graphics.Palette;
+import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
@@ -55,6 +56,7 @@ public class ArticleDetailFragment extends Fragment implements
     @BindString(R.string.transition_photo) String transitionPhoto;
 
     @BindView(R.id.photo) ImageView mPhotoView;
+    @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.share_fab) ImageButton shareFab;
     @BindView(R.id.photo_container) View mPhotoContainerView;
     @BindView(R.id.nested_scrollview) NestedScrollView mNestedScrollView;
@@ -164,6 +166,23 @@ public class ArticleDetailFragment extends Fragment implements
 
         ViewCompat.setTransitionName(mPhotoView, targetRefViewForSharedElementTransition);
         // tky add, End, 9Sept.2017 --------------
+        if (mToolbar != null) {
+
+            mToolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+            mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    //----------------------------------------------------------------
+                    // Indirect a call to a method via ArticaleDetailActivity/Activity.
+                    // supportFinishAfterTransition() -- refers to a method in FragmentActivity.java
+                    //----------------------------------------------------------------
+                    getActivityCast().supportFinishAfterTransition(); // For Content Transition
+                    //onSupportNavigateUp();
+                }
+            });
+        }
+
         if (mNestedScrollView != null){
             mNestedScrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
                 @Override
@@ -380,15 +399,4 @@ public class ArticleDetailFragment extends Fragment implements
     //---------- End: Loader Stuff ----------------------//
     //---------------------------------------------------//
 
-//-1
-    public int getUpButtonFloor() {
-        if (mPhotoContainerView == null || mPhotoView.getHeight() == 0) {
-            return Integer.MAX_VALUE;
-        }
-
-        // account for parallax
-        return mIsCard
-                ? (int) mPhotoContainerView.getTranslationY() + mPhotoView.getHeight() - mScrollY
-                : mPhotoView.getHeight() - mScrollY;
-    }
 }
