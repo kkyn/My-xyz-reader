@@ -16,8 +16,10 @@
 
         <!-- ....... content transition ....... -->
         <!-- 'EXIT', ENTER transitions -->
-        <!--<item name="android:windowExitTransition">@transition/</item>-->
-        <!--<item name="android:windowEnterTransition">@transition/</item>-->
+        <!--<item name="android:windowExitTransition">@transition/actvtya_exit</item>-->
+        <!--<item name="android:windowEnterTransition">@transition/actvtyb_enter</item>-->
+        <!--<item name="android:windowExitTransition">@transition/move</item>-->
+        <!--<item name="android:windowEnterTransition">@transition/move</item>-->
 
         <!-- ....... specify shared element transition ....... -->
         <item name="android:windowSharedElementExitTransition">@transition/v21_sharedelementtransition</item>

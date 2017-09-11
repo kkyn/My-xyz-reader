@@ -18,10 +18,14 @@
 <resources>
     <color name="photo_placeholder">#ccc</color>
 
-    <color name="theme_primary">#04561A</color>
+    <color name="theme_primary">@color/lightblue_300</color>
+    <color name="theme_primary_dark">@color/lightblue_700</color>
+    <color name="theme_accent">@color/red_a400</color>
+
+    <!--<color name="theme_primary">#04561A</color>
     <color name="theme_primary_dark">#04561A</color>
     <color name="theme_accent">#04561A</color>
-    <color name="ltgray">#ffe0e0e0</color>
+    <color name="light_gray">#ffe0e0e0</color>-->
 
     <!-- note: tky add -->
     <color name="lime_300">#DCE775</color>
@@ -29,7 +33,21 @@
     <color name="lime_700">#AFB42B</color>
     <color name="cyan_a400">#00E5FF</color>
 
-    <!-- tky add .... -->
-    <color name="drkgray">#ff909090</color>
+
+    <color name="lightblue_300">#4fc3f7</color>
+    <color name="lightblue_500">#03a9f4</color>
+    <color name="lightblue_700">#0288d1</color>
+
+    <color name="red_a400">#ff1744</color>
+    <color name="red_a200">#FF5252</color>
+
     <color name="pink_a400">#F50057</color>
+
+    <!-- tky add .... -->
+    <color name="gray">#ff909090</color>
+    <color name="bluegray_500">#607d8b</color>
+    <color name="bluegray_600">#546e7a</color>
+    <color name="bluegray_700">#455a64</color>
+
+    <color name="white">#ffffff</color>
 </resources>

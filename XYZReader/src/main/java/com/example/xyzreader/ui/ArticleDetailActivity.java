@@ -22,6 +22,7 @@ import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 
 /**
  * An activity representing a single Article detail screen, letting you swipe between articles.
@@ -31,13 +32,14 @@ public class ArticleDetailActivity extends ActionBarActivity
 
     private Cursor mCursor;
     private long mStartId;
-
-    private ViewPager mPager;
     private MyPagerAdapter mPagerAdapter;
+
+    @BindView(R.id.pager) ViewPager mPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().getDecorView().setSystemUiVisibility(
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
@@ -45,17 +47,23 @@ public class ArticleDetailActivity extends ActionBarActivity
         }
         setContentView(R.layout.activity_article_detail);
 
-        // tky add, 9Sept.2017 --------------
+        ButterKnife.bind(this);
+
+        // ----- Use in shared-element-transition -----
         postponeEnterTransition();
+        // --------------------------------------------
 
         getLoaderManager().initLoader(0, null, this);
 
         mPagerAdapter = new MyPagerAdapter(getFragmentManager());
-        mPager = (ViewPager) findViewById(R.id.pager);
+
         mPager.setAdapter(mPagerAdapter);
-        mPager.setPageMargin((int) TypedValue
-                .applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics()));
-        mPager.setPageMarginDrawable(new ColorDrawable(0x22000000));
+
+        mPager.setPageMargin(
+            (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics())
+            );
+
+        mPager.setPageMarginDrawable(new ColorDrawable(0x22000000)); // -- black:(0x22000000), -- white(0x44FFFFFF)
 
         mPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
@@ -72,7 +80,6 @@ public class ArticleDetailActivity extends ActionBarActivity
 
             }
         });
-
 
 
         if (savedInstanceState == null) {

@@ -1,17 +1,32 @@
 <resources>
     <!-- detail -->
-    <dimen name="detail_title_text_size">32sp</dimen>
-    <dimen name="detail_body_text_size">22sp</dimen>
+
+    <dimen name="detail_title_textsize">26sp</dimen>
+    <dimen name="detail_byline_textsize">18sp</dimen>
+
+    <dimen name="detail_textbody_elevation">2dp</dimen>
+    <dimen name="detail_textbody_padding_top">34dp</dimen>
+    <dimen name="detail_textbody_textsize">18sp</dimen>
     <item name="detail_body_line_spacing_multiplier" format="float" type="fraction">1.25</item>
 
     <dimen name="fab_elevation">6dp</dimen>
     <dimen name="fab_press_translation_z">6dp</dimen>
     <dimen name="fab_margin">24dp</dimen>
+    <dimen name="fab_size">56dp</dimen>
 
     <!-- note: tky add -->
-    <dimen name="toolbar_title_left_padding">72dp</dimen>
-    <dimen name="offset_from_topedge">100dp</dimen>
+    <dimen name="appbarlayout_topedge_offset">100dp</dimen>
+    <dimen name="toolbar_title_padding_left">72dp</dimen>
 
     <integer name="anim_fade_duration">250</integer>
-    <integer name="anim_slide_duration">250</integer>
+    <integer name="anim_explode_duration">200</integer>
+    <integer name="anim_slide_duration">200</integer>
+
+    <dimen name="textview_padding_big">16dp</dimen>
+    <dimen name="textview_padding_small">4dp</dimen>
+
+    <dimen name="article_title_textsize">22sp</dimen>
+    <dimen name="article_subtitle_textsize">16sp</dimen>
+    <integer name="article_title_maxlines">4</integer>
+    <integer name="article_subtitle_maxlines">2</integer>
 </resources>

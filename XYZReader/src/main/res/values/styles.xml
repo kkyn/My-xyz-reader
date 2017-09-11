@@ -25,24 +25,4 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
-    <!-- note: tky add -->
-    <!-- Bold Graphic Design > Applying A Color Palette -->
-    <!-- https://developer.android.com/training/material/theme.html -->
-    <style name="MyTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <!--<item name="android:background">@color/lime_500</item>-->
-        <item name="colorPrimary">@color/lime_500</item>
-        <item name="colorPrimaryDark">@color/lime_700</item>
-        <item name="colorAccent">@color/cyan_a400</item>
-
-        <!-- CONTENT TRANSITION -->
-        <!-- enable window content transitions -->
-        <item name="android:windowContentTransitions">true</item>
-        <!-- content transition -->
-        <!-- 'EXIT' transitions -->
-        <item name="android:windowExitTransition">@transition/actvtya_exit</item>
-
-        <!-- 'ENTER' transitions -->
-        <!--<item name="android:windowEnterTransition">@transition/actvtyb_enter</item>-->
-
-    </style>
 </resources>

@@ -69,12 +69,9 @@ public class ArticleDetailFragment extends Fragment implements
     private Cursor mCursor;
     private long mItemId;
     private int mMutedColor = 0xFF333333;
-//    private ObservableScrollView mScrollView;
-//    private DrawInsetsFrameLayout mDrawInsetsFrameLayout;
+
     private ColorDrawable mStatusBarColorDrawable;
 
-    private int mTopInset;
-    private int mScrollY;
     private boolean mIsCard = false;
     private int mStatusBarFullOpacityBottom;
 
@@ -137,35 +134,17 @@ public class ArticleDetailFragment extends Fragment implements
             Bundle savedInstanceState) {
 
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
+
         ButterKnife.bind(this, mRootView);
 
-        /*mDrawInsetsFrameLayout = (DrawInsetsFrameLayout)
-                mRootView.findViewById(R.id.draw_insets_frame_layout);
-        mDrawInsetsFrameLayout.setOnInsetsCallback(new DrawInsetsFrameLayout.OnInsetsCallback() {
-            @Override
-            public void onInsetsChanged(Rect insets) {
-                mTopInset = insets.top;
-            }
-        });*/
-
-        /*mScrollView = (ObservableScrollView) mRootView.findViewById(R.id.scrollview);
-        mScrollView.setCallbacks(new ObservableScrollView.Callbacks() {
-            @Override
-            public void onScrollChanged() {
-                mScrollY = mScrollView.getScrollY();
-                getActivityCast().onUpButtonFloorChanged(mItemId, ArticleDetailFragment.this);
-                mPhotoContainerView.setTranslationY((int) (mScrollY - mScrollY / PARALLAX_FACTOR));
-                updateStatusBar();
-            }
-        });*/
-
-        // tky add, Begin, 9Sept.2017 --------------
+        // tky add, Begin --------------
         // Set the 'target'-View for 'shared-element-transition' animation
         //-------------------------------------------------------
         String targetRefViewForSharedElementTransition = transitionPhoto + mItemId;
 
         ViewCompat.setTransitionName(mPhotoView, targetRefViewForSharedElementTransition);
-        // tky add, End, 9Sept.2017 --------------
+
+
         if (mToolbar != null) {
 
             mToolbar.setNavigationIcon(R.drawable.ic_arrow_back);
@@ -174,8 +153,10 @@ public class ArticleDetailFragment extends Fragment implements
                 public void onClick(View view) {
 
                     //----------------------------------------------------------------
+                    // tky add, ref: https://developer.android.com/reference/android/support/v4/app/FragmentActivity.html#supportFinishAfterTransition()
                     // Indirect a call to a method via ArticaleDetailActivity/Activity.
                     // supportFinishAfterTransition() -- refers to a method in FragmentActivity.java
+                    // Reverses the Activity Scene entry Transition and triggers the calling Activity to reverse its exit Transition.
                     //----------------------------------------------------------------
                     getActivityCast().supportFinishAfterTransition(); // For Content Transition
                     //onSupportNavigateUp();
@@ -206,6 +187,7 @@ public class ArticleDetailFragment extends Fragment implements
                 }
             });
         }
+        // tky add, End --------------
 
         mStatusBarColorDrawable = new ColorDrawable(0);
 
@@ -220,38 +202,10 @@ public class ArticleDetailFragment extends Fragment implements
         });
 
         bindViews();
-       // updateStatusBar(); // tky remove 9Sept.2017
+
         return mRootView;
     }
 
-//    private void updateStatusBar() {
-//        int color = 0;
-//        if (mPhotoView != null && mTopInset != 0 && mScrollY > 0) {
-//            float f = progress(mScrollY,
-//                    mStatusBarFullOpacityBottom - mTopInset * 3,
-//                    mStatusBarFullOpacityBottom - mTopInset);
-//            color = Color.argb((int) (255 * f),
-//                    (int) (Color.red(mMutedColor) * 0.9),
-//                    (int) (Color.green(mMutedColor) * 0.9),
-//                    (int) (Color.blue(mMutedColor) * 0.9));
-//        }
-//        mStatusBarColorDrawable.setColor(color);
-//        mDrawInsetsFrameLayout.setInsetBackground(mStatusBarColorDrawable);
-//    }
-
-//    static float progress(float v, float min, float max) {
-//        return constrain((v - min) / (max - min), 0, 1);
-//    }
-//
-//    static float constrain(float val, float min, float max) {
-//        if (val < min) {
-//            return min;
-//        } else if (val > max) {
-//            return max;
-//        } else {
-//            return val;
-//        }
-//    }
 
     private Date parsePublishedDate() {
         try {
@@ -312,32 +266,42 @@ public class ArticleDetailFragment extends Fragment implements
                         Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY).replaceAll("(\r\n|\n)", "<br />"))
                         );
 
+            //****************************************
             ImageLoaderHelper.getInstance(getActivity())
                              .getImageLoader()
-                             .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
+                             .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL),
+                                  new ImageLoader.ImageListener() {
 
-                        @Override
-                        public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
-                            Bitmap bitmap = imageContainer.getBitmap();
-                            if (bitmap != null) {
-                                Palette p = Palette.generate(bitmap, 12);
-                                mMutedColor = p.getDarkMutedColor(0xFF333333);
-                                mPhotoView.setImageBitmap(imageContainer.getBitmap());
-                                mRootView.findViewById(R.id.meta_bar)
-                                        .setBackgroundColor(mMutedColor);
+                                      @Override
+                                      public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
+                                          Bitmap bitmap = imageContainer.getBitmap();
 
-                                 // updateStatusBar(); // tky remove 9Sept.2017
+                                          if (bitmap != null) {
+                                              Palette p = Palette.generate(bitmap, 12);
 
-                                // tky add, 9Sept.2017 --------------
-                                scheduleStartPostponedTransition(mPhotoView);
-                            }
-                        }
+                                              //--------------------------------------------------
+                                              // tky add comment, android.graphics.color, grayscale: (0xFF333333)
+                                              // http://encycolorpedia.com/333333
+                                              //--------------------------------------------------
+                                              mMutedColor = p.getDarkMutedColor(0xFF333333);
 
-                        @Override
-                        public void onErrorResponse(VolleyError volleyError) {
+                                              mPhotoView.setImageBitmap(imageContainer.getBitmap());
+                                              mRootView.findViewById(R.id.meta_bar)
+                                                  .setBackgroundColor(mMutedColor);
 
-                        }
-                    });
+                                              //--------------------------------------------
+                                              scheduleStartPostponedTransition(mPhotoView);
+                                              //--------------------------------------------
+                                          }
+                                      }
+
+                                      @Override
+                                      public void onErrorResponse(VolleyError volleyError) {
+
+                                      }
+                                  });
+            //****************************************
+
         } else {
             mRootView.setVisibility(View.GONE);
             titleView.setText("N/A");
@@ -346,20 +310,23 @@ public class ArticleDetailFragment extends Fragment implements
         }
     }
 
-    // tky add, Begin, 9Sept.2017 --------------
-    ////////////////////////////////////////////////////////////
+    // tky add, Begin --------------
     private void scheduleStartPostponedTransition(final View sharedElement) {
         sharedElement.getViewTreeObserver().addOnPreDrawListener(
             new ViewTreeObserver.OnPreDrawListener() {
                 @Override
                 public boolean onPreDraw() {
                     sharedElement.getViewTreeObserver().removeOnPreDrawListener(this);
+
+                    // ----- Use in shared-element-transition -----
                     getActivity().startPostponedEnterTransition();
+                    // --------------------------------------------
+
                     return true;
                 }
             });
     }
-    // tky add, End, 9Sept.2017 --------------
+    // tky add, End ----------------
 
     //---------------------------------------------------//
     //---------- Begin: Loader Stuff --------------------//

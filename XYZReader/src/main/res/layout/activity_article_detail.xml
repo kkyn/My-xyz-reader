@@ -6,12 +6,11 @@
     android:fitsSystemWindows="true"
     >
     <!--android:fitsSystemWindows="true"
-        needed, very important !!,help to keep the upbutton at same position -->
+        needed, very important !!,help to keep the upbutton at same position ?? -->
 
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
 
 </FrameLayout>

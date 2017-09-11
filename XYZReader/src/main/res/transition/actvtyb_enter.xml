@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!-- Set Slide for Content Transition -->
-<slide xmlns:android="http://schemas.android.com/apk/res/"
-    android:duration="500" >
+<slide
+    xmlns:android="http://schemas.android.com/apk/res/"
+    android:duration="@integer/anim_slide_duration">
 </slide>

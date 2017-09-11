@@ -10,7 +10,7 @@
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/offset_from_topedge"
+        android:layout_height="@dimen/appbarlayout_topedge_offset"
         android:background="?attr/colorPrimary"
         >
 
@@ -18,10 +18,11 @@
             android:id="@+id/toolbar_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:minHeight="40dp"
             android:fitsSystemWindows="true"
             app:layout_scrollFlags="scroll|enterAlways|exitUntilCollapsed|snap"
             >
+            <!--android:minHeight="40dp" , not neccesary -->
+
             <!--app:layout_scrollFlags="scroll|enterAlways"-->
             <!--app:layout_scrollFlags="scroll|exitUntilCollapsed"-->
             <!--app:layout_scrollFlags="scroll|enterAlways|exitUntilCollapsed|enterAlwaysCollapsed"-->
@@ -37,10 +38,12 @@
                 app:layout_collapseMode="pin"
                 >
 
+                android:layout_height="50dp"
+                android:layout_height="?android:attr/actionBarSize", good
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:layout_marginStart="@dimen/toolbar_title_left_padding"
+                    android:layout_marginStart="@dimen/toolbar_title_padding_left"
                     android:src="@drawable/logo"
                     app:layout_collapseMode="parallax"
                     />
@@ -65,12 +68,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:paddingBottom="28dp"
-            android:paddingLeft="@dimen/list_side_margin"
-            android:paddingRight="@dimen/list_side_margin"
             android:scrollbarStyle="outsideOverlay"
             />
-        <!--android:paddingTop="116dp"-->
+
+        <!--android:paddingBottom="@dimen/list_recyclerview_padding"
+        android:paddingLeft="@dimen/list_side_margin"
+        android:paddingRight="@dimen/list_side_margin"-->
+
 
     </android.support.v4.widget.SwipeRefreshLayout>
     <!-- ///////////////////////////////////////// -->

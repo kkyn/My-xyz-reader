@@ -57,7 +57,7 @@ public class ArticleListActivity extends AppCompatActivity /*ActionBarActivity*/
 
     private static final String TAG = ArticleListActivity.class.toString();
 
-    // Use Butterknife
+    // Use Butterknife --------
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.swipe_refresh_layout) SwipeRefreshLayout mSwipeRefreshLayout;
     @BindView(R.id.recycler_view) RecyclerView mRecyclerView;
@@ -252,8 +252,8 @@ public class ArticleListActivity extends AppCompatActivity /*ActionBarActivity*/
         public void onBindViewHolder( final ViewHolder holder, int position) {
             mCursor.moveToPosition(position);
 
-            // tky add, Begin, 9Sept.2017 --------------
-            // tky add ----------------------------------------------
+            // tky add, Begin +++++++++++++++++++++++++++++++++++++++
+            // ------------------------------------------------------
             // Set the 'source'-View for 'shared-element-transition' animation
             //-------------------------------------------------------
             long photoId = getItemId(holder.getAdapterPosition());
@@ -262,33 +262,35 @@ public class ArticleListActivity extends AppCompatActivity /*ActionBarActivity*/
             String stringUrl = mCursor.getString(ArticleLoader.Query.THUMB_URL);
             Float floatAspectRatio = mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO);
 
-            //***********************
+            ////********************************************
             ImageLoader imageLoader =
-                ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader();
+                            ImageLoaderHelper.getInstance(ArticleListActivity.this)
+                                             .getImageLoader();
 
-            //***********************
+            //----------------------------------------------
             // Get Image-info from ImageLoader-object,
             // with the given image's-Url-id and interface 'pointer'/ (callback).
+            //----------------------------------------------
             ImageLoader.ImageContainer myImageContainer =
-                imageLoader.get(stringUrl, new ImageLoader.ImageListener() {
+                imageLoader.get(stringUrl,
+                                new ImageLoader.ImageListener() {
 
-                    @Override
-                    public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
+                                    @Override
+                                    public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
 
-                        Bitmap bitmap = imageContainer.getBitmap();
+                                        Bitmap bitmap = imageContainer.getBitmap();
 
-                        if (bitmap != null) {
-                            colorTheTitleBar(bitmap, holder);
-                        }
-                    }
+                                        if (bitmap != null) {
+                                            colorTheTitleBar(bitmap, holder);
+                                        }
+                                    }
 
-                    @Override
-                    public void onErrorResponse(VolleyError volleyError) {
-                    }
-                });
+                                    @Override
+                                    public void onErrorResponse(VolleyError volleyError) {
+                                    }
+                                });
+            ////********************************************
 
-
-            //***********************
             //----------------------------------------------
             // -- thumb-nail-View --
             // .setImageUrl -- define in ImageView
@@ -296,6 +298,8 @@ public class ArticleListActivity extends AppCompatActivity /*ActionBarActivity*/
             holder.thumbnailDynamicHeightNetworkImageView.setAspectRatio(floatAspectRatio);
             holder.thumbnailDynamicHeightNetworkImageView.setTransitionName(srcRefViewForSharedElementTransition);
 
+            //----------------------------------------------
+            // ----- Use in shared-element-transition ------
             //----------------------------------------------
             final Pair<View, String> pair1 =
                         new Pair<>((View)holder.thumbnailDynamicHeightNetworkImageView,
@@ -342,7 +346,7 @@ public class ArticleListActivity extends AppCompatActivity /*ActionBarActivity*/
                     //------------------------------------------------
                 }
             });
-            // tky add, End, 9Sept.2017 --------------
+            // tky add, End +++++++++++++++++++++++++++++++++++++++
 
             holder.titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
 
